@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Title</title>
+    <meta charset="utf-8">
+    <style>
+      @import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+      @import url(https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
+      @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+
+      body { font-family: 'Droid Serif'; }
+      h1, h2, h3 {
+        font-family: 'Yanone Kaffeesatz';
+        font-weight: normal;
+      }
+      .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
+    </style>
+  </head>
+  <body>
+    <textarea id="source">
+
+class: center, middle
+
+# Clojure: 
+# An Elegant Language for a More Civilized Time
+
+.center[![XKCD](https://imgs.xkcd.com/comics/lisp_cycles.png)]
+
+```
+brew install clojure
+brew install leiningen
+;; if you wish to type along
+```
+
+---
+
+# Agenda
+
+1. What is Clojure?
+2. Syntax and Functions
+3. ...
+
+---
+
+# Clojure is...
+--
+
+- A functional Lisp
+```clojure
+user=> (println "Hello iHeart!")
+Hello iHeart!
+nil
+```
+--
+
+- Immutable by default
+```clojure
+(def character {:name "Obi Wan"})
+user=> (assoc character :name "Brian")
+{:name "Brian"}
+user=> character
+{:name "Obi Wan"}
+```
+--
+
+- Has some incredible tooling ([Figwheel](https://github.com/bhauman/lein-figwheel), [Leiningen](https://leiningen.org/), [spec](https://clojure.org/guides/spec))
+--
+
+- It compiles to both JVM and Javascript targets.
+--
+
+  - Yes this is actually a mature and stable feature.
+--
+
+
+- Initially developed by Rich Hickey at Cognitect.
+
+???
+- Functional first, has basically no idiomatic OO facilities
+- Very focused on using raw data and simple data structures like lists, vectors, and maps
+- Immutability by default allows for really straightforward ergonomics for asynchronous code
+- Figwheel gives hot code reloading in JS, and preserves the program state, allowing you to quickly and intuitively tinker with UI elements that would otherwise take a full page refresh and a bunch of clicks and typing to reestablish the desired state.
+
+---
+
+Common Data Types
+
+```clojure
+"Strings!"               ;; Comments start with semicolons
+
+42                       
+
+:keywords                
+
+#{"Heterogenous" :sets}
+
+{:associative "Maps"}
+
+["Heterogenous" :lists]
+
+(defn funcs [param] (inc param))
+
+(defmacro infix [x operator y] ;; Macros write code at compile time
+   (list operator x y))
+```
+
+---
+
+Function Declaration and Use
+
+```clojure
+user=> (defn my-add   ;; Function name
+  [x y]               ;; Parameters
+  "A simple function" ;; Docstring
+  (+ x y))            ;; Function body
+user=> (my-add 3 3)
+6
+```
+--
+
+Anonymous Declaration
+```clojure
+user=> (fn [x y] (+ x y))    ;; The longer shorthand
+user=> #(+ %1 %2)            ;; The very terse shorthand
+```
+
+Functions as Arguments
+```clojure
+user=> (map #(* 5 %) (range 10))
+(0 5 10 15 20 25 30 35 40 45)
+```
+
+???
+- Function declaration is really straightforward in Clojure.
+
+---
+
+Collections
+
+Maps
+```clojure
+user=> (def sith {:master "Sidious" :apprentice "Tyranus"})
+#'user/sith
+user=> (:master sith)
+"Sidious"
+```
+--
+Lists and Vectors
+```clojure
+user=> (conj '(4 5 6) 1 2 3)
+(3 2 1 4 5 6)  ;; Lists conj onto the left (slightly confusing) 
+user=> (conj [4 5 6] 1 2 3)
+[4 5 6 1 2 3]  ;; so Lucas uses vectors
+user=> (into (conj [4 5 6] 1 2 3) [7 8 9])
+[4 5 6 1 2 3 7 8 9]
+```
+
+--
+Sets
+```clojure
+user=> (conj #{:sith :jedi} :jedi)
+#{:jedi :sith}
+```
+
+???
+- `def` is a var binding, not quite the same thing as variable declaration in other langs. While it is possible to directly overwrite these names in the REPL, that path leads to anger, hate, and suffering.
+- `:master` and `:apprentice` are keyords. Keywords are, according to the official docs "symbolic identifiers that evaluate to themselves". They're basically useful barewords that also implement the iFn for getting the value for the keyword's own value from a map.
+- Lists and vectors in Clojure are slightly different, most notably in their insertion order, but most consequentially in their performance characteristics, but otherwise they're mostly treated as sequences. This can occasionally lead to some confusion regarding return types, hence mapv and filterv and similar functions that return a specific type.
+- However, lists and vectors and maps are all collections and so many functions are written with the intention of supporting them all.
+- There are also sets, which behave similarly to sets in Python and other languages. Each element must be unique and there are set operations like union and intersection specifically for this type.
+
+---
+
+# Functional Basics in Clojure
+
+Mapping functions over collections is a common pattern.
+```clojure
+(map some-function stuff-to-map-over)
+```
+--
+Filtering is a similarly common pattern
+```clojure
+(filter some-predicate stuff-to-filter)
+```
+--
+We can use this to make a Sith Detector™.
+
+```clojure
+(defn is-sith [character]
+  (clojure.string/includes? character "Darth"))
+
+(def cast ["Darth Vader" "Yoda" "Darth Sidius" 
+           "Obi Wan" "Luke Skywalker" "Jar Jar Binks"])
+
+(filter is-sith cast)
+;; user=> ("Darth Vader" "Darth Sidius")
+```
+---
+
+# Functional Basics in Clojure
+
+How about a function that turns Jedi into Sith?
+
+```clojure
+(defn bring-to-darkside [character]
+  (str "Darth " character))
+
+(map bring-to-darkside (filter (complement is-sith) cast))
+```
+That's starting to be a lot of nesting....
+
+--
+We can do better with the threading macros `->` and `->>`
+
+```clojure
+(defn is-jedi [character]
+  (-> character is-sith not))
+  ;; Yoda actually speaks Clojure
+
+(defn map-to-darkside [cast]
+  (->> cast
+      (filter is-jedi)
+      (map bring-to-darkside)))
+
+;; user=> (map-to-darkside cast)
+;; ("Darth Yoda" "Darth Obi Wan" 
+;;  "Darth Luke Skywalker" "Darth Jar Jar Binks")
+```
+
+---
+
+# Functional Basics in Clojure
+
+_Darth Jar Jar Binks_ has too many syllables, maybe let's just use last names.
+
+```clojure
+(defn last-name [character]
+  (-> character 
+    (clojure.string/split #" ") 
+    last))
+
+(defn map-to-darkside [cast]
+  (->> cast
+      (filter is-jedi)
+      (map last-name)
+      (map bring-to-darkside)))
+;; user=> (map-to-darkside cast)
+;; ("Darth Yoda" "Darth Wan" "Darth Skywalker" "Darth Binks")
+```
+- Threading macros allow readable data pipelines that are easy to extend
+- These macros avoid crazy nesting of parentheses
+- You can achieve similar things using `(comp f g ...)`, however reading the transformations "forwards" with threading.
+
+
+---
+
+# Handling State
+
+```clojure
+user=> (def episodes [4 5 6])
+#'user/episodes
+user=> (into episodes [1 2 3])
+[4 5 6 1 2 3]
+user=> episodes
+[4 5 6]
+```
+
+--
+Atoms
+
+```clojure
+user=> (def episodes (atom [4 5 6]))
+#'user/episodes
+user=> episodes
+#object[clojure.lang.Atom 0x73a1dfc8 {:status :ready, :val [4 5 6]}]
+user=> episodes
+user=> (into episodes [1 2 3])
+
+ClassCastException clojure.lang.Atom cannot be cast to 
+clojure.lang.IPersistentCollection  clojure.core/conj--4345 (core.clj:82)
+```
+
+???
+- As we can see the addition of episodes 1 2 and 3 mercifully have not persisted.
+- This is because clojure data structures are immutable by default.
+- To solve this we have several options for mutable state in clojure, but the most common one I've run across has been the atom.
+- In terms of developer ergonomics atoms behave similarly to variables in other languages, except that they are thread safe.
+
+---
+# Using Atoms
+
+```clojure
+user=> (def episodes (atom [4 5 6]))
+#'user/episodes
+user=> @episodes ;; equivalent to `(deref episodes)`
+[4 5 6]
+```
+
+--
+```clojure
+user=> (reset! episodes [4 5 6 1 2 3])
+user=> @episodes
+[4 5 6 1 2 3]
+```
+--
+```clojure
+user=> (doseq [ep [4 5 6 1 2 3]]
+  #_=>   (future (reset!           ;; Movies take a lot of work to make,
+            episodes               ;; so we'll give each its own thread.
+            (conj @episodes ep))))
+user=> @episodes
+[5 2 3 1]                          ;; We only got one good movie!?
+```
+--
+```clojure
+user=> (doseq [ep [4 5 6 1 2 3]]
+  #_=>   (future (swap! episodes conj ep)))
+nil
+user=> @episodes
+[4 6 5 2 3 1]
+```
+
+???
+- We can dereference atoms (and other references like futures) using the `@` syntax or using the function `deref`.
+- We can directly overwrite the value of the atom using `reset!`, the ! is convention to signal a function that will have side effects.
+- This is not threadsafe however...
+- Using `reset!` we ended up with all 3 crap episodes and only one good one. And they were out of order!
+- This is because the threads that added episode 4 and 6 had their work overwritten by the other threads.
+- We can use `swap!` which will ensure that threads won't overwrite a value that has changed since reading
+- Update function must be referentially transparent
+
+---
+
+
+# Clojurescript Demo
+
+```bash
+$ lein new reagent-figwheel <project-name>
+$ cd <project-name>
+$ lein figwheel
+
+```
+Go to [localhost:3449](http://localhost:3449)
+
+
+---
+    </textarea>
+    <script src="https://remarkjs.com/downloads/remark-latest.min.js">
+    </script>
+    <script>
+      var slideshow = remark.create();
+    </script>
+  </body>
+</html>
