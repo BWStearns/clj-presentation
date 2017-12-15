@@ -22,9 +22,11 @@
 class: center, middle
 
 # Clojure: 
-# An Elegant Language for a More Civilized Time
+## An Elegant Language for a More Civilized Time
 
 .center[![XKCD](https://imgs.xkcd.com/comics/lisp_cycles.png)]
+
+https://github.com/BWStearns
 
 ```
 brew install clojure
@@ -143,31 +145,35 @@ Clojure
 Function Declaration and Use
 
 ```clojure
-user=> (defn my-add   ;; Function name
+(defn my-add   ;; Function name
   [x y]               ;; Parameters
   "A simple function" ;; Docstring
   (+ x y))            ;; Function body
-user=> (my-add 3 3)
-6
+(my-add 3 3)
+;; 6
 ```
 
 ???
 - Function declaration is really straightforward in Clojure.
+- Functions can be defined anonymously. This is very idiomatic in clojure.
+- Here we're mapping a function that could be called "times-five" over the range(10)
+- Because it's so convenient to create anonymous functions on the fly this tends towards more readable names for named functions, since you don't exhaust the "good" names.
+- Vader Parenting
 
 --
 
 Anonymous Declaration
 ```clojure
-user=> (fn [x y] (+ x y))    ;; The longer shorthand
-user=> #(+ %1 %2)            ;; The very terse shorthand
+(fn [x y] (+ x y))    ;; The longer shorthand
+#(+ %1 %2)            ;; The very terse shorthand
 ```
 
 --
 
 Functions as Arguments and Return Values
 ```clojure
-user=> (map #(* 5 %) (range 10))
-(0 5 10 15 20 25 30 35 40 45)
+(map #(* 5 %) (range 10))
+;; (0 5 10 15 20 25 30 35 40 45)
 ```
 
 --
@@ -231,6 +237,11 @@ Mapping functions over collections is a common pattern.
 ```clojure
 (map some-function stuff-to-map-over)
 ```
+
+???
+- Mapping applies a function to every element within a collection and returns the result as a list.
+- Filtering applies a predicate to every value in a collection and returns every value for which the predicate returns true.
+
 --
 Filtering is a similarly common pattern
 ```clojure
@@ -247,7 +258,7 @@ We can use this to make a Sith Detector™.
            "Ajit Pai" "Luke Skywalker" "Jar Jar Binks"])
 
 (filter is-sith cast)
-;; user=> ("Darth Vader" "Darth Sidius")
+;; ("Darth Vader" "Darth Sidius")
 ```
 ---
 
@@ -263,6 +274,10 @@ How about a function that turns Jedi into Sith?
 ```
 That's starting to be a lot of nesting....
 
+???
+- Simple maps and filters (and reduces) is that they can be combined to make more powerful short but readable functions.
+- Clojure has some macros that help us avoid drowning in parentheses.
+
 --
 We can do better with the threading macros `->` and `->>`
 
@@ -276,7 +291,7 @@ We can do better with the threading macros `->` and `->>`
       (filter is-jedi)
       (map bring-to-darkside)))
 
-;; user=> (map-to-darkside cast)
+(map-to-darkside cast)
 ;; ("Darth Yoda" "Darth Ajit Pai" 
 ;;  "Darth Luke Skywalker" "Darth Jar Jar Binks")
 ```
@@ -286,6 +301,7 @@ We can do better with the threading macros `->` and `->>`
 # Functional Basics in Clojure
 
 _Darth Jar Jar Binks_ has too many syllables, maybe let's just use last names.
+--
 
 ```clojure
 (defn last-name [character]
@@ -298,12 +314,14 @@ _Darth Jar Jar Binks_ has too many syllables, maybe let's just use last names.
       (filter is-jedi)
       (map last-name)
       (map bring-to-darkside)))
-;; user=> (map-to-darkside cast)
+
+(map-to-darkside cast)
 ;; ("Darth Yoda" "Darth Pai" "Darth Skywalker" "Darth Binks")
 ```
+--
 - Threading macros allow readable data pipelines that are easy to extend
 - These macros avoid crazy nesting of parentheses
-- You can achieve similar things using `(comp f g ...)`, however reading the transformations "forwards" with threading.
+- You can achieve similar things using `(comp f g ...)`, however it can be more comfortable reading the transformations "forwards" with threading when there are many steps.
 
 
 ---
