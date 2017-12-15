@@ -56,12 +56,16 @@
    [:input {:type :text
             ; :default-value (:text-input @app-state "")
             :on-change update-state}]
-   [counter]
-   [:input 
-    {:type "button" 
-     :value "Show Another Character" 
-     :on-click #(swap! app-state increase-cast-count)}]
-   (character-list)])
+ 
+   ; [counter]
+ 
+ 
+   ; [:input 
+   ;  {:type "button" 
+   ;   :value "Show Another Character" 
+   ;   :on-click #(swap! app-state increase-cast-count)}]
+   ; (character-list)
+])
 
 
 
