@@ -1,6 +1,6 @@
 # Clojure: An Elegant Language for a More Civilized Age
 
-Slides can be viewed [here](http://htmlpreview.github.io/?https://github.com/BWStearns/clj-presentation/blob/master/elegant-lang-more-civilized-time.html)
+Slides can be viewed [here](http://htmlpreview.github.io/?https://github.com/BWStearns/clj-presentation/blob/master/elegant-lang-more-civilized-age.html)
 
 ### Installing Clojure
 
