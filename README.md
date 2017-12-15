@@ -3,6 +3,7 @@
 Slides can be viewed [here](http://htmlpreview.github.io/?https://github.com/BWStearns/clj-presentation/blob/master/elegant-lang-more-civilized-age.html)
 Press `p` for presentation mode which will show the notes in the sidebar.
 
+Video can be viewed [here](https://vimeo.com/247536537) with the password `brianisajedi!`.
 
 ### Installing Clojure
 
