@@ -3,3 +3,7 @@ body {
   margin: auto;
   margin-top: 100px;
 }
+
+img {
+  width: 30%;
+}

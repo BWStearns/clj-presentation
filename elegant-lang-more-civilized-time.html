@@ -86,11 +86,13 @@ user=> character
 Common Data Types
 
 ```clojure
-"Strings!"               ;; Comments start with semicolons
+true false
 
-42                       
+"Strings!"                     ;; Comments start with semicolons
 
-:keywords                
+42                
+
+:keywords
 
 #{"Heterogenous" :sets}
 
@@ -104,6 +106,38 @@ Common Data Types
    (list operator x y))
 ```
 
+```python
+    print("Hello world")
+```
+---
+
+#Don't Fear the (Paren)s
+
+???
+- A lot of devs have a view of Lisps as piles of parens
+- It's not that different from say, python
+- Here's an example with the same number of parens for a function
+- They're just in different places, and you get to skip some other syntax.
+
+--
+
+Python
+
+```python
+def my_csv(things):
+    return ", ".join(things)
+```
+
+--
+
+Clojure
+
+```clojure
+(require '[clojure.string :as s])
+
+(defn my-csv [things]
+    (s/join ", " things))
+```
 ---
 
 Function Declaration and Use
@@ -116,6 +150,10 @@ user=> (defn my-add   ;; Function name
 user=> (my-add 3 3)
 6
 ```
+
+???
+- Function declaration is really straightforward in Clojure.
+
 --
 
 Anonymous Declaration
@@ -124,14 +162,30 @@ user=> (fn [x y] (+ x y))    ;; The longer shorthand
 user=> #(+ %1 %2)            ;; The very terse shorthand
 ```
 
-Functions as Arguments
+--
+
+Functions as Arguments and Return Values
 ```clojure
 user=> (map #(* 5 %) (range 10))
 (0 5 10 15 20 25 30 35 40 45)
 ```
 
-???
-- Function declaration is really straightforward in Clojure.
+--
+```clojure
+(defn come-to-the-what-side [which]
+  (fn [who]
+    (str who ", come to the " which " side")))
+```
+--
+```clojure
+(def parenting (come-to-the-what-side "dark"))
+```
+--
+```clojure
+(parenting "Luke")
+;;"Luke, come to the dark side"
+
+```
 
 ---
 
@@ -190,7 +244,7 @@ We can use this to make a Sith Detector™.
   (clojure.string/includes? character "Darth"))
 
 (def cast ["Darth Vader" "Yoda" "Darth Sidius" 
-           "Obi Wan" "Luke Skywalker" "Jar Jar Binks"])
+           "Ajit Pai" "Luke Skywalker" "Jar Jar Binks"])
 
 (filter is-sith cast)
 ;; user=> ("Darth Vader" "Darth Sidius")
@@ -223,7 +277,7 @@ We can do better with the threading macros `->` and `->>`
       (map bring-to-darkside)))
 
 ;; user=> (map-to-darkside cast)
-;; ("Darth Yoda" "Darth Obi Wan" 
+;; ("Darth Yoda" "Darth Ajit Pai" 
 ;;  "Darth Luke Skywalker" "Darth Jar Jar Binks")
 ```
 
@@ -245,7 +299,7 @@ _Darth Jar Jar Binks_ has too many syllables, maybe let's just use last names.
       (map last-name)
       (map bring-to-darkside)))
 ;; user=> (map-to-darkside cast)
-;; ("Darth Yoda" "Darth Wan" "Darth Skywalker" "Darth Binks")
+;; ("Darth Yoda" "Darth Pai" "Darth Skywalker" "Darth Binks")
 ```
 - Threading macros allow readable data pipelines that are easy to extend
 - These macros avoid crazy nesting of parentheses
@@ -265,6 +319,11 @@ user=> episodes
 [4 5 6]
 ```
 
+???
+- As we can see the addition of episodes 1 2 and 3 mercifully have not persisted.
+- This is because clojure data structures are immutable by default.
+- To solve this we have several options for mutable state in clojure, but the most common one I've run across has been the atom.
+- In terms of developer ergonomics atoms behave similarly to variables in other languages, except that they are thread safe.
 --
 Atoms
 
@@ -279,13 +338,6 @@ user=> (into episodes [1 2 3])
 ClassCastException clojure.lang.Atom cannot be cast to 
 clojure.lang.IPersistentCollection  clojure.core/conj--4345 (core.clj:82)
 ```
-
-???
-- As we can see the addition of episodes 1 2 and 3 mercifully have not persisted.
-- This is because clojure data structures are immutable by default.
-- To solve this we have several options for mutable state in clojure, but the most common one I've run across has been the atom.
-- In terms of developer ergonomics atoms behave similarly to variables in other languages, except that they are thread safe.
-
 ---
 # Using Atoms
 
@@ -295,6 +347,14 @@ user=> (def episodes (atom [4 5 6]))
 user=> @episodes ;; equivalent to `(deref episodes)`
 [4 5 6]
 ```
+???
+- We can dereference atoms (and other references like futures) using the `@` syntax or using the function `deref`.
+- We can directly overwrite the value of the atom using `reset!`, the ! is convention to signal a function that will have side effects.
+- This is not threadsafe however...
+- Using `reset!` we ended up with all 3 crap episodes and only one good one. And they were out of order!
+- This is because the threads that added episode 4 and 6 had their work overwritten by the other threads.
+- We can use `swap!` which will ensure that threads won't overwrite a value that has changed since reading
+- Update function must be referentially transparent
 
 --
 ```clojure
@@ -320,15 +380,6 @@ user=> @episodes
 [4 6 5 2 3 1]
 ```
 
-???
-- We can dereference atoms (and other references like futures) using the `@` syntax or using the function `deref`.
-- We can directly overwrite the value of the atom using `reset!`, the ! is convention to signal a function that will have side effects.
-- This is not threadsafe however...
-- Using `reset!` we ended up with all 3 crap episodes and only one good one. And they were out of order!
-- This is because the threads that added episode 4 and 6 had their work overwritten by the other threads.
-- We can use `swap!` which will ensure that threads won't overwrite a value that has changed since reading
-- Update function must be referentially transparent
-
 ---
 
 
@@ -344,6 +395,9 @@ Go to [localhost:3449](http://localhost:3449)
 
 
 ---
+
+# Questions?
+
     </textarea>
     <script src="https://remarkjs.com/downloads/remark-latest.min.js">
     </script>
